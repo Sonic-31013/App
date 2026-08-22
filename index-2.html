@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Movie Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070b11;
+    --blue: #4a90e2;
+    --blue-dim: rgba(74, 144, 226, 0.28);
+    --text: #afcbea;
+    --text-dim: #7e97b3;
+    --font: 'Source Serif 4', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 680px; margin: 0 auto; padding: 0 20px 64px; }
+
+  /* --- Header --- */
+  .header { text-align: center; padding: 44px 0 28px; border-bottom: 1px solid var(--blue-dim); margin-bottom: 28px; }
+  .header h1 { font-family: var(--font); font-weight: 600; font-style: italic; font-size: clamp(2.2rem, 6vw, 3rem); color: var(--blue); margin: 0; }
+  .header .tagline { font-style: italic; color: var(--text-dim); font-size: 1rem; margin: 10px 0 0; }
+
+  /* --- Banners / status --- */
+  .banner {
+    border: 1px solid var(--blue-dim);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .banner strong { color: var(--blue); font-style: normal; }
+
+  .status { font-size: 0.88rem; font-style: italic; color: var(--text-dim); min-height: 1.3em; margin-top: 8px; }
+  .status--error { color: #e08a8a; }
+
+  /* --- Search --- */
+  .search-card { padding: 0 0 24px; margin-bottom: 24px; border-bottom: 1px solid var(--blue-dim); }
+
+  .search-card label { display: block; font-style: italic; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
+
+  .search-row { display: flex; gap: 10px; }
+
+  #search-input {
+    flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--blue-dim);
+    color: var(--text); font-family: var(--font); font-size: 1.05rem; padding: 10px 2px; min-height: 44px;
+  }
+  #search-input:focus-visible { outline: none; border-bottom-color: var(--blue); }
+
+  button {
+    font-family: var(--font); font-size: 0.9rem; letter-spacing: 0.02em; cursor: pointer;
+    border-radius: 6px; min-height: 44px; border: 1px solid transparent;
+    transition: transform 0.08s ease, background 0.15s ease;
+  }
+  button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { button { transition: none; } }
+
+  .btn-primary { background: var(--blue); color: #061019; font-weight: 600; padding: 0 22px; }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* --- Picker --- */
+  .picker { margin-bottom: 24px; }
+  .picker h2, .confirm-card h2, .log-section h2 {
+    font-style: italic; font-weight: 400; font-size: 0.9rem; color: var(--text-dim); margin: 0 0 12px;
+  }
+
+  .picker-list { display: flex; flex-direction: column; }
+
+  .picker-item {
+    background: transparent; border: none; border-bottom: 1px solid var(--blue-dim);
+    padding: 13px 2px; width: 100%; text-align: left; color: var(--text); font-family: var(--font); font-size: 1.05rem;
+  }
+  .picker-item:last-child { border-bottom: none; }
+  .picker-item:hover { color: var(--blue); }
+  .picker-item .year { font-style: italic; font-size: 0.9rem; color: var(--text-dim); }
+
+  /* --- Confirm --- */
+  .confirm-card { padding: 0 0 24px; margin-bottom: 24px; border-bottom: 1px solid var(--blue-dim); }
+
+  .confirm-title { font-family: var(--font); font-weight: 600; font-size: 1.9rem; color: var(--blue); line-height: 1.15; }
+  .confirm-title .year { font-weight: 400; font-style: italic; font-size: 1.1rem; color: var(--text-dim); margin-left: 8px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 16px; }
+  .chip { font-family: var(--font); font-style: italic; font-size: 0.82rem; border: 1px solid var(--blue-dim); color: var(--blue); border-radius: 999px; padding: 3px 12px; }
+  .chip.small { font-size: 0.78rem; padding: 2px 10px; }
+
+  .detail-list { margin: 0 0 8px; }
+  .detail-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--blue-dim); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row dt { font-style: italic; font-size: 0.85rem; color: var(--text-dim); width: 84px; flex-shrink: 0; margin: 0; }
+  .detail-row dd { margin: 0; font-size: 1rem; }
+
+  .not-this { background: none; border: none; color: var(--text-dim); font-family: var(--font); font-style: italic; font-size: 0.85rem; text-decoration: underline; padding: 12px 0 4px; min-height: unset; }
+  .not-this:hover { color: var(--blue); }
+
+  hr.tear { border: none; border-top: 1px solid var(--blue-dim); margin: 18px 0; }
+
+  .field-label { display: block; font-style: italic; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 8px; }
+
+  textarea {
+    width: 100%; background: transparent; border: 1px solid var(--blue-dim); border-radius: 8px;
+    color: var(--text); font-family: var(--font); font-size: 1rem; padding: 12px 14px;
+    min-height: 90px; resize: vertical; margin-bottom: 16px;
+  }
+  textarea:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+
+  /* --- Genre filter --- */
+  .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .filter-pill {
+    font-family: var(--font); font-style: italic; font-size: 0.82rem; color: var(--text-dim);
+    background: transparent; border: 1px solid var(--blue-dim); border-radius: 999px; padding: 5px 14px; min-height: unset;
+  }
+  .filter-pill:hover { color: var(--blue); border-color: var(--blue); }
+  .filter-pill.active { background: var(--blue); color: #03080f; border-color: var(--blue); font-style: normal; font-weight: 600; }
+
+  /* --- Log (rows, not boxes) --- */
+  .log-section { margin-top: 8px; }
+  .log-list { display: flex; flex-direction: column; }
+
+  .log-row { padding: 20px 0; border-bottom: 1px solid var(--blue-dim); }
+  .log-row:last-child { border-bottom: none; }
+
+  .log-row-title { font-family: var(--font); font-weight: 600; font-size: 1.35rem; color: var(--blue); }
+  .log-row-title .year { font-weight: 400; font-style: italic; font-size: 1rem; color: var(--text-dim); margin-left: 8px; }
+
+  .log-row-meta { font-size: 0.9rem; font-style: italic; color: var(--text-dim); margin: 4px 0; }
+  .log-row-meta strong { color: var(--text); font-weight: 600; font-style: normal; }
+
+  .log-row-comment { font-size: 1rem; color: var(--text); margin: 12px 0 0; line-height: 1.65; }
+  .log-row-comment:empty { display: none; }
+
+  .empty-state { font-style: italic; font-size: 0.95rem; color: var(--text-dim); border: 1px dashed var(--blue-dim); border-radius: 8px; padding: 28px; text-align: center; }
+
+  footer { margin-top: 44px; text-align: center; font-size: 0.8rem; font-style: italic; color: var(--text-dim); }
+  footer a { color: var(--blue); }
+
+  @media (max-width: 480px) {
+    .search-row { flex-direction: column; }
+    .btn-primary { width: 100%; }
+    .detail-row { flex-direction: column; gap: 2px; }
+    .detail-row dt { width: auto; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <h1>Movie Diary</h1>
+    <p class="tagline">movies I have watched till now</p>
+  </header>
+
+  <div id="config-banner" class="banner" hidden></div>
+
+  <main>
+    <section class="search-card" id="search-card">
+      <label for="search-input">Movie title</label>
+      <div class="search-row">
+        <input id="search-input" type="text" placeholder="e.g. Interstellar" autocomplete="off" />
+        <button id="search-btn" class="btn-primary">Look it up</button>
+      </div>
+      <div id="search-status" class="status" aria-live="polite"></div>
+    </section>
+
+    <section id="picker" class="picker" hidden>
+      <h2>Which one did you mean?</h2>
+      <div id="picker-list" class="picker-list"></div>
+    </section>
+
+    <section id="confirm" class="confirm-card" hidden></section>
+
+    <section class="log-section">
+      <h2>Your log</h2>
+      <div id="filter-row" class="filter-row"></div>
+      <div id="log-status" class="status" aria-live="polite"></div>
+      <div id="log-list" class="log-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Movie data from <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDb</a>. This product uses the TMDb API but is not endorsed or certified by TMDb.<br>Entries are stored in your own Supabase project.</p>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ============================================================
+  // CONFIG — fill these in before deploying. See README.md.
+  // ============================================================
+  const TMDB_API_KEY   = 'beec71d806378a3dae4dcbdfa123723d';
+  const SUPABASE_URL   = 'https://rioxsnpxyxhsjshayktf.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpb3hzbnB4eXhoc2pzaGF5a3RmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczNDYzOTAsImV4cCI6MjEwMjkyMjM5MH0.6DXVeF4XVtRFVL1bAHi8U8Sa7RkecjXoMdqqja3i7-Q';
+  const TABLE_NAME = 'entries';
+  // ============================================================
+
+  const GENRES = ["Action","Adventure","Animation","Comedy","Crime","Documentary","Drama","Family","Fantasy","History","Horror","Music","Mystery","Romance","Science Fiction","TV Movie","Thriller","War","Western"];
+
+  let allEntries = [];
+  let activeGenre = null;
+
+  const isConfigured = !TMDB_API_KEY.startsWith('YOUR_') &&
+                        !SUPABASE_URL.startsWith('YOUR_') &&
+                        !SUPABASE_ANON_KEY.startsWith('YOUR_');
+
+  const supabaseClient = isConfigured
+    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+    : null;
+
+  const configBanner = document.getElementById('config-banner');
+  const searchInput = document.getElementById('search-input');
+  const searchBtn = document.getElementById('search-btn');
+  const searchStatus = document.getElementById('search-status');
+  const picker = document.getElementById('picker');
+  const pickerList = document.getElementById('picker-list');
+  const confirmSection = document.getElementById('confirm');
+  const filterRow = document.getElementById('filter-row');
+  const logStatus = document.getElementById('log-status');
+  const logList = document.getElementById('log-list');
+
+  renderFilterPills();
+
+  if (!isConfigured) {
+    configBanner.hidden = false;
+    configBanner.innerHTML = '<strong>Setup needed.</strong> Open index.html and add your TMDb API key and Supabase project URL/anon key at the top of the &lt;script&gt; section. See README.md.';
+    searchBtn.disabled = true;
+  } else {
+    loadLog();
+  }
+
+  searchBtn.addEventListener('click', handleSearch);
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSearch(); });
+
+  async function handleSearch() {
+    const query = searchInput.value.trim();
+    if (!query) { searchStatus.textContent = 'Type a movie title first.'; return; }
+
+    resetConfirm();
+    picker.hidden = true;
+    searchStatus.textContent = 'Searching…';
+    searchStatus.classList.remove('status--error');
+
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error(`TMDb returned ${res.status}`);
+      const data = await res.json();
+      const results = (data.results || []).slice(0, 5);
+
+      if (results.length === 0) {
+        searchStatus.textContent = `No matches for "${query}". Check the spelling and try again.`;
+        return;
+      }
+
+      searchStatus.textContent = '';
+      renderPicker(results);
+    } catch (err) {
+      searchStatus.textContent = "Couldn't reach TMDb — check your API key in the config section.";
+      searchStatus.classList.add('status--error');
+      console.error(err);
+    }
+  }
+
+  function renderPicker(results) {
+    pickerList.innerHTML = '';
+    results.forEach((movie) => {
+      const item = document.createElement('button');
+      item.className = 'picker-item';
+      const year = movie.release_date ? movie.release_date.slice(0, 4) : 'Unknown year';
+      item.innerHTML = `${escapeHtml(movie.title)} <span class="year">(${year})</span>`;
+      item.addEventListener('click', () => selectMovie(movie.id));
+      pickerList.appendChild(item);
+    });
+    picker.hidden = false;
+  }
+
+  async function selectMovie(id) {
+    picker.hidden = true;
+    searchStatus.textContent = 'Loading details…';
+
+    try {
+      const res = await fetch(`https://api.themoviedb.org/3/movie/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits`);
+      if (!res.ok) throw new Error(`TMDb returned ${res.status}`);
+      const movie = await res.json();
+      searchStatus.textContent = '';
+      renderConfirm(movie);
+    } catch (err) {
+      searchStatus.textContent = "Couldn't load that movie's details. Try again.";
+      searchStatus.classList.add('status--error');
+      console.error(err);
+    }
+  }
+
+  function formatRuntime(minutes) {
+    if (!minutes) return '—';
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  }
+
+  function getDirectors(movie) {
+    const crew = (movie.credits && movie.credits.crew) || [];
+    return crew.filter(c => c.job === 'Director').map(c => c.name);
+  }
+
+  function getActors(movie, limit) {
+    const cast = (movie.credits && movie.credits.cast) || [];
+    return cast.slice(0, limit).map(c => c.name);
+  }
+
+  function renderConfirm(movie) {
+    const year = movie.release_date ? movie.release_date.slice(0, 4) : '—';
+    const genres = (movie.genres || []).map(g => g.name);
+    const directors = getDirectors(movie);
+    const actors = getActors(movie, 5);
+    const rating = movie.vote_average ? movie.vote_average.toFixed(1) + '/10' : '—';
+    const runtime = formatRuntime(movie.runtime);
+
+    confirmSection.innerHTML = `
+      <h2>Confirm</h2>
+      <div class="confirm-title">${escapeHtml(movie.title)}<span class="year">${year}</span></div>
+      <div class="chips">${genres.map(g => `<span class="chip">${escapeHtml(g)}</span>`).join('') || '<span class="chip">Genre unknown</span>'}</div>
+      <dl class="detail-list">
+        <div class="detail-row"><dt>Rating</dt><dd>${rating}</dd></div>
+        <div class="detail-row"><dt>Runtime</dt><dd>${runtime}</dd></div>
+        <div class="detail-row"><dt>Director</dt><dd>${escapeHtml(directors.join(', ') || '—')}</dd></div>
+        <div class="detail-row"><dt>Actors</dt><dd>${escapeHtml(actors.join(', ') || '—')}</dd></div>
+      </dl>
+      <button class="not-this" id="not-this-btn">Not this one — search again</button>
+      <hr class="tear" />
+      <span class="field-label">Your comments</span>
+      <textarea id="comment" placeholder="Anything you want to remember about this one…"></textarea>
+      <button class="btn-primary" id="save-btn">Save to my log</button>
+      <div class="status" id="save-status" aria-live="polite"></div>
+    `;
+    confirmSection.hidden = false;
+
+    document.getElementById('not-this-btn').addEventListener('click', () => {
+      resetConfirm();
+      picker.hidden = false;
+    });
+
+    document.getElementById('save-btn').addEventListener('click', () => saveEntry(movie, genres, directors, actors));
+  }
+
+  function resetConfirm() {
+    confirmSection.hidden = true;
+    confirmSection.innerHTML = '';
+  }
+
+  async function saveEntry(movie, genres, directors, actors) {
+    const saveBtn = document.getElementById('save-btn');
+    const saveStatus = document.getElementById('save-status');
+    const comment = document.getElementById('comment').value.trim();
+
+    saveBtn.disabled = true;
+    saveStatus.textContent = 'Saving…';
+    saveStatus.classList.remove('status--error');
+
+    const row = {
+      query_text: searchInput.value.trim(),
+      tmdb_id: movie.id,
+      matched_title: movie.title,
+      release_year: movie.release_date ? movie.release_date.slice(0, 4) : null,
+      genres: genres,
+      rating: movie.vote_average || null,
+      directors: directors,
+      actors: actors,
+      runtime_minutes: movie.runtime || null,
+      comment: comment || null,
+    };
+
+    try {
+      const { data, error } = await supabaseClient.from(TABLE_NAME).insert(row).select().single();
+      if (error) throw error;
+
+      saveStatus.textContent = 'Saved.';
+      allEntries = [data, ...allEntries];
+      activeGenre = null;
+      renderFilterPills();
+      applyFilter();
+      searchInput.value = '';
+      setTimeout(() => { resetConfirm(); searchStatus.textContent = ''; }, 600);
+    } catch (err) {
+      saveStatus.textContent = "Couldn't save — check your Supabase URL/key and that the table matches README.md.";
+      saveStatus.classList.add('status--error');
+      saveBtn.disabled = false;
+      console.error(err);
+    }
+  }
+
+  async function loadLog() {
+    logStatus.textContent = 'Loading your log…';
+    try {
+      const { data, error } = await supabaseClient
+        .from(TABLE_NAME)
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      logStatus.textContent = '';
+      allEntries = data || [];
+      applyFilter();
+    } catch (err) {
+      logStatus.textContent = "Couldn't load your log — check your Supabase config and that the table matches README.md.";
+      logStatus.classList.add('status--error');
+      console.error(err);
+    }
+  }
+
+  function renderFilterPills() {
+    filterRow.innerHTML = '';
+    const allPill = document.createElement('button');
+    allPill.className = 'filter-pill' + (activeGenre === null ? ' active' : '');
+    allPill.textContent = 'All';
+    allPill.addEventListener('click', () => { activeGenre = null; renderFilterPills(); applyFilter(); });
+    filterRow.appendChild(allPill);
+
+    GENRES.forEach((genre) => {
+      const pill = document.createElement('button');
+      pill.className = 'filter-pill' + (activeGenre === genre ? ' active' : '');
+      pill.textContent = genre;
+      pill.addEventListener('click', () => {
+        activeGenre = (activeGenre === genre) ? null : genre;
+        renderFilterPills();
+        applyFilter();
+      });
+      filterRow.appendChild(pill);
+    });
+  }
+
+  function applyFilter() {
+    const filtered = activeGenre ? allEntries.filter(e => (e.genres || []).includes(activeGenre)) : allEntries;
+    renderLog(filtered);
+  }
+
+  function renderLog(entries) {
+    if (entries.length === 0) {
+      logList.innerHTML = `<div class="empty-state">${activeGenre ? `No ${escapeHtml(activeGenre)} entries yet.` : 'Your diary is empty. Search for a movie above to add your first entry.'}</div>`;
+      return;
+    }
+    logList.innerHTML = '';
+    entries.forEach(addLogRow);
+  }
+
+  function addLogRow(entry) {
+    const row = document.createElement('div');
+    row.className = 'log-row';
+    const genres = entry.genres || [];
+    const rating = entry.rating ? Number(entry.rating).toFixed(1) + '/10' : '—';
+    const runtime = formatRuntime(entry.runtime_minutes);
+    const directors = (entry.directors || []).join(', ') || '—';
+    const actors = (entry.actors || []).join(', ') || '—';
+
+    row.innerHTML = `
+      <div class="log-row-title">${escapeHtml(entry.matched_title || entry.query_text)}<span class="year">${entry.release_year || ''}</span></div>
+      <div class="chips">${genres.map(g => `<span class="chip small">${escapeHtml(g)}</span>`).join('')}</div>
+      <div class="log-row-meta"><strong>Rating</strong> ${rating} &nbsp;·&nbsp; <strong>Runtime</strong> ${runtime}</div>
+      <div class="log-row-meta"><strong>Director</strong> ${escapeHtml(directors)}</div>
+      <div class="log-row-meta"><strong>Actors</strong> ${escapeHtml(actors)}</div>
+      <p class="log-row-comment">${escapeHtml(entry.comment || '')}</p>
+    `;
+    logList.appendChild(row);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>
