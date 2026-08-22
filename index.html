@@ -238,7 +238,7 @@
                         !SUPABASE_URL.startsWith('YOUR_') &&
                         !SUPABASE_ANON_KEY.startsWith('YOUR_');
 
-  const supabase = isConfigured
+  const supabaseClient = isConfigured
     ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
     : null;
 
@@ -402,7 +402,7 @@
     };
 
     try {
-      const { data, error } = await supabase.from(TABLE_NAME).insert(row).select().single();
+      const { data, error } = await supabaseClient.from(TABLE_NAME).insert(row).select().single();
       if (error) throw error;
 
       saveStatus.textContent = 'Saved.';
@@ -420,7 +420,7 @@
   async function loadLog() {
     logStatus.textContent = 'Loading your log…';
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from(TABLE_NAME)
         .select('*')
         .order('created_at', { ascending: false });
